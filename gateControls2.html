@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gate Controls</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .controls-container {
+            text-align: center;
+        }
+        .gate-btn {
+            position: relative;
+            padding: 15px 30px 15px;
+            font-size: 18px;
+            margin: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 300px;
+            height: 50px;
+            overflow: hidden;
+            text-align: left;
+            transition: background-color 0.3s ease-in-out;
+        }
+        .gate-btn .progress {
+            position: absolute;
+            top: 0;
+            left: 0;
+            
+            width: 0%; /* This will be dynamically adjusted */
+            height: 100%;
+            background-color: #85C226; /* Light green to indicate progress */
+            z-index: 0;
+        }
+        .gate-btn .text {
+            position: relative;
+            z-index: 1;
+            white-space: nowrap;
+            padding: 15px 30px 15px;
+        }
+        .gate-btn:active {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="controls-container">
+        <button id="left gate" class="gate-btn" ><span class="text">Left Gate </span><div class="progress"></div></button>
+        <button id="both gates" class="gate-btn"><span class="text">Both Gates</span><div class="progress"></div></button>
+        <button id="right gate" class="gate-btn"><span class="text">Right Gate</span><div class="progress"></div></button>
+    </div>
+
+    <script>
+        let leftGateProgress = 0;
+        let bothGatesProgress = 0;
+        let rightGateProgress = 0;
+        let leftGateTimer, bothGatesTimer, rightGateTimer;
+        let leftGatePressStart, bothGatesPressStart, rightGatePressStart;
+
+        // Helper function to update the button text and fill color with percentage
+        function updateButtonText(buttonId, progress) {
+            const button = document.getElementById(buttonId);
+            const progressElement = button.querySelector('.progress');
+            const textElement = button.querySelector('.text');
+            const percentageText = `${Math.round(progress)}% opened`;
+
+            // Update progress bar width to simulate the button filling
+            progressElement.style.width = `${progress}% opened`;
+
+            // Change button text when progress reaches 100%
+            if (progress >= 100) {
+                textElement.textContent = ` Gate Opened`;
+            } else {
+                textElement.textContent = `${buttonId.replace(/([A-Z])/g, ' $1').trim()}: ${percentageText}`;
+            }
+        }
+
+        // Start increasing percentage when mouse is pressed down
+        function startPress(buttonId) {
+            const pressStartTime = Date.now();
+            if (buttonId === 'left gate') leftGatePressStart = pressStartTime;
+            if (buttonId === 'both gates') bothGatesPressStart = pressStartTime;
+            if (buttonId === 'right gate') rightGatePressStart = pressStartTime;
+
+            const incrementProgress = () => {
+                let currentProgress = 0;
+                if (buttonId === 'left gate') currentProgress = leftGateProgress;
+                if (buttonId === 'both gates') currentProgress = bothGatesProgress;
+                if (buttonId === 'right gate') currentProgress = rightGateProgress;
+
+                if (currentProgress < 100) {
+                    currentProgress += 1;
+                }
+
+                if (buttonId === 'left gate') leftGateProgress = currentProgress;
+                if (buttonId === 'both gates') bothGatesProgress = currentProgress;
+                if (buttonId === 'right gate') rightGateProgress = currentProgress;
+
+                updateButtonText(buttonId, currentProgress);
+
+                if (currentProgress < 100) {
+                    if (buttonId === 'left gate') leftGateTimer = setTimeout(incrementProgress, 100);
+                    if (buttonId === 'both gates') bothGatesTimer = setTimeout(incrementProgress, 100);
+                    if (buttonId === 'right gate') rightGateTimer = setTimeout(incrementProgress, 100);
+                }
+            };
+
+            incrementProgress();
+        }
+
+        // Stop increasing the percentage when mouse is released
+        function stopPress(buttonId) {
+            const pressEndTime = Date.now();
+            let pressDuration = pressEndTime - (buttonId === 'left gate' ? leftGatePressStart : (buttonId === 'both Gates' ? bothGatesPressStart : rightGatePressStart));
+
+            clearTimeout(leftGateTimer);
+            clearTimeout(bothGatesTimer);
+            clearTimeout(rightGateTimer);
+
+            if (buttonId === 'left gate') leftGatePressStart = 0;
+            if (buttonId === 'both gates ') bothGatesPressStart = 0;
+            if (buttonId === 'right gate') rightGatePressStart = 0;
+
+            updateButtonText(buttonId, buttonId === 'left gate' ? leftGateProgress : (buttonId === 'both gates' ? bothGatesProgress : rightGateProgress));
+        }
+
+        // Attach event listeners to buttons
+        document.getElementById('left gate').addEventListener('mousedown', () => startPress('left gate'));
+        document.getElementById('left gate').addEventListener('mouseup', () => stopPress('left gate'));
+        document.getElementById('left gate').addEventListener('mouseleave', () => stopPress('left gate'));
+
+        document.getElementById('both gates').addEventListener('mousedown', () => startPress('both gates'));
+        document.getElementById('both gates').addEventListener('mouseup', () => stopPress('both gates'));
+        document.getElementById('both gates').addEventListener('mouseleave', () => stopPress('both gates'));
+
+        document.getElementById('right gate').addEventListener('mousedown', () => startPress('right gate'));
+        document.getElementById('right gate').addEventListener('mouseup', () => stopPress('right gate'));
+        document.getElementById('right gate').addEventListener('mouseleave', () => stopPress('right gate'));
+    </script>
+
+</body>
+</html>
